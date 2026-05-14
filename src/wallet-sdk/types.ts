@@ -42,7 +42,7 @@ export interface Wallet {
     downloadLink?:string;//未安装就导航到下载地址
 }
 
-//钱包上下文提供者
+//钱包上下文提供者属性
 export type WalletProviderProps = {
     children:React.ReactNode;
     chains:Chain[];

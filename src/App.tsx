@@ -1,6 +1,7 @@
 import {ethers} from "ethers";
 import {WalletProvider,ConnectButton} from "./wallet-sdk";
 import type { Wallet } from "./wallet-sdk/types";
+import metamaskWallet from "./wallet-sdk/connectors/metamask";
 
 declare global {
   interface Window {
@@ -12,7 +13,7 @@ const chains = [
   {
     id: 1,
     name: "Ethereum",
-    rpcUrl: "http://localhost:8545",
+    rpcUrl: "https://eth-mainnet.g.alchemy.com/v2/your-api-key",
     currency: {
       name: "Ether",
       symbol: "ETH",
@@ -25,18 +26,7 @@ const chains = [
   },
 ]
 
-const wallets : Wallet[] = [
-  {
-    id: "metamask",
-    name: "MetaMask",
-    icon: "https://cdn.metamask.io/images/logo.png",
-    connector: () => {
-      return new Promise((resolve) => {
-        resolve(new ethers.BrowserProvider(window.ethereum));
-      });
-    },
-  },
-]
+const wallets : Wallet[] = [metamaskWallet];
 
 function App() {
   const provider =new ethers.BrowserProvider(window.ethereum);
@@ -44,8 +34,7 @@ function App() {
   return (
     <>
       <WalletProvider chains={chains} provider={provider} autoConnect={true} wallets={wallets}>
-          {/* <ConnectButton /> */}
-          <div>src/App  WalletProvider</div>
+          <ConnectButton />
       </WalletProvider>
     </>
   )
