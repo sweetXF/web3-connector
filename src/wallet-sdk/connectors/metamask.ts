@@ -1,24 +1,75 @@
 import { ethers } from 'ethers'
 import type { Wallet } from '../types'
 
+const getEthereum = ()=> typeof window !== 'undefined' ? (window as any).ethereum : undefined
+
 //判断是否安装了metamask
 const isMetaMaskInstalled = (): boolean => {
-  const ethereum = (window as any).ethereum
-  const isMetaMask = ethereum.isMetaMask
-  return typeof window !== 'undefined' && !!ethereum && (isMetaMask ?? false)
+  const eth = getEthereum()
+  return !!eth && eth.isMetaMask
+}
+
+//保存监听器引用，避免重复注册
+let listenersBound = false
+let handleAcountsChanged: ((accounts: string[]) => void) | null = null
+let handleChainChanged: ((chainHex: string) => void) | null = null
+let handleDisconnect: ((error: unknown) => void) | null = null
+
+//绑定监听器
+const bindListeners=(ethereum:any)=>{
+  if(listenersBound) return
+  //账户变化
+  handleAcountsChanged = (newAccounts: string[]) => {
+    if (!newAccounts || newAccounts.length === 0) {
+      window.dispatchEvent(new CustomEvent('wallet_disconnected'))
+      return
+    } 
+    const curChainId = Number(ethereum.chainId) //最新ChainId
+      window.dispatchEvent(
+        new CustomEvent('wallet_accounts_changed', {
+          detail: { accounts: newAccounts, chainId: curChainId },
+        }),
+      ) 
+  }
+  //链变化
+  handleChainChanged = (chainIdHex) => {
+    const chainId = 
+    typeof chainIdHex === 'string' && chainIdHex.startsWith('0x')
+      ? parseInt(chainIdHex, 16)
+      : Number(chainIdHex)
+    window.dispatchEvent(
+      new CustomEvent('wallet_chain_changed', { detail: { chainId: chainId } }),
+    )
+  }
+  //断开连接
+  handleDisconnect = (error: any) => {
+    window.dispatchEvent(new CustomEvent('wallet_disconnected', { detail: error }))
+  }
+
+  ethereum.on('accountsChanged', handleAcountsChanged)
+  ethereum.on('chainChanged', handleChainChanged)
+  ethereum.on('disconnect', handleDisconnect)
+  listenersBound = true
+}
+
+//监听器解绑
+const unbindListeners=(ethereum:any)=>{
+  if(!listenersBound) return
+  if(handleAcountsChanged) ethereum.removeListener('accountsChanged', handleAcountsChanged)
+  if(handleChainChanged) ethereum.removeListener('chainChanged', handleChainChanged)
+  if(handleDisconnect) ethereum.removeListener('disconnect', handleDisconnect)
+  listenersBound = false
 }
 
 //连接metamask钱包
-const connectMetaMask = async (): Promise<any> => {
-  if (!isMetaMaskInstalled) {
+const connectMetaMask = async () => {
+  if (!isMetaMaskInstalled()) {
     throw new Error('MetaMask is not installed')
   }
-  try {
-    const ethereum = window.ethereum
-    if (!ethereum) throw new Error('No ethereum provider found"')
-
-    // 请求授权账户
-    const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
+  
+    const ethereum = getEthereum()
+    // 获取账户
+    const accounts:string[]=await ethereum.request({ method: 'eth_requestAccounts' })
     if (!accounts || accounts.length === 0) {
       throw new Error('No accounts found')
     }
@@ -29,48 +80,19 @@ const connectMetaMask = async (): Promise<any> => {
     const address = await signer.getAddress()
     const { chainId } = await provider.getNetwork()
 
-    //监听账户连接变化
-    ethereum.on('accountsChanged', (newAccounts: string[]) => {
-      console.log('accountsChanged', newAccounts)
-      if (newAccounts.length === 0) {
-        window.dispatchEvent(new CustomEvent('wallet_disconnected'))
-      } else {
-        window.dispatchEvent(
-          new CustomEvent('wallet_accounts_changed', {
-            detail: { accounts: newAccounts, chainId: chainId.toString() },
-          }),
-        )
-      }
-    })
-
-    //监听链变化
-    ethereum.on('chainChanged', (newChainIdHex: string | number | bigint) => {
-      const newChainId = parseInt(newChainIdHex.toString(), 16) //解析链ID
-      console.log('chainChanged', newChainId)
-      window.dispatchEvent(
-        new CustomEvent('wallet_chain_changed', { detail: { chainId: newChainId } }),
-      )
-    })
-
-    //监听断开连接
-    ethereum.on('disconnect', (error: any) => {
-      window.dispatchEvent(new CustomEvent('wallet_disconnected', { detail: error }))
-    })
+    bindListeners(ethereum)
 
     return {
       accounts,
       signer,
       address,
-      chainId: chainId.toString(),
+      chainId: Number(chainId),//类型对应 WalletState.chainID 
       provider,
       disconnect: async () => {
-        ethereum.removeAllListeners()
+        unbindListeners(ethereum)
       },
     }
-  } catch (error: any) {
-    console.error('MetaMask connection failed', error)
-    throw error
-  }
+ 
 }
 
 export const metamaskWallet: Wallet = {

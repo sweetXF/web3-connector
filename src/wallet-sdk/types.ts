@@ -26,6 +26,7 @@ export interface WalletState {
   provider: any
 }
 
+//钱包上下文值
 export interface WalletContextValue extends WalletState {
   connect: (walletID: string) => Promise<void>
   disconnect: () => Promise<void> //断开连接
@@ -33,6 +34,8 @@ export interface WalletContextValue extends WalletState {
   openModal: () => void //打开弹窗
   closeModal: () => void //关闭弹窗
 }
+
+export type WalletContext = React.Context<WalletContextValue>
 
 export interface Wallet {
   id: string
@@ -44,7 +47,7 @@ export interface Wallet {
   downloadLink?: string //未安装就导航到下载地址
 }
 
-//钱包上下文提供者属性
+//钱包上下文提供者
 export type WalletProviderProps = {
   children: React.ReactNode
   chains: Chain[]
@@ -52,3 +55,14 @@ export type WalletProviderProps = {
   autoConnect?: boolean //是否自动连接
   provider?: any
 }
+
+// 钱包 connector 返回结构
+export type WalletConnector = {
+  accounts: string[]
+  signer: unknown
+  address: string
+  chainId: number
+  provider: unknown
+  disconnect: () => Promise<void>
+}
+

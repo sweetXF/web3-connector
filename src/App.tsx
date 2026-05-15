@@ -10,11 +10,17 @@ declare global {
   }
 }
 
+const infuraId = process.env.PUBLIC_INFURA_ID;
+
+if (!infuraId) {
+  throw new Error('请在 .env.local 中配置PUBLIC_INFURA_ID' );
+}
+
 const chains = [
   {
     id: 1,
     name: 'Ethereum',
-    rpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/your-api-key',
+    rpcUrl: `https://sepolia.infura.io/v3/${infuraId}`,
     currency: {
       name: 'Ether',
       symbol: 'ETH',
