@@ -1,4 +1,4 @@
-import ConnectButton from "./components/ConnectButton"
-import WalletProvider from "./provider"
+import ConnectButton from './components/ConnectButton'
+import WalletProvider from './provider'
 
-export {ConnectButton,WalletProvider}
+export { ConnectButton, WalletProvider }
