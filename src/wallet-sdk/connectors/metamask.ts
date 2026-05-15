@@ -3,6 +3,8 @@ import type { Wallet } from '../types'
 
 const getEthereum = ()=> typeof window !== 'undefined' ? (window as any).ethereum : undefined
 
+console.log('metamask-ethereum',getEthereum())
+
 //判断是否安装了metamask
 const isMetaMaskInstalled = (): boolean => {
   const eth = getEthereum()
@@ -66,7 +68,6 @@ const connectMetaMask = async () => {
   if (!isMetaMaskInstalled()) {
     throw new Error('MetaMask is not installed')
   }
-  
     const ethereum = getEthereum()
     // 获取账户
     const accounts:string[]=await ethereum.request({ method: 'eth_requestAccounts' })

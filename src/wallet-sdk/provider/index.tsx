@@ -1,5 +1,4 @@
 import React, {
-  createContext,
   useCallback,
   useEffect,
   useMemo,
@@ -16,49 +15,31 @@ import type {
   WalletState,
 } from '../types'
 import WalletModal from '../components/WalletModal'
+import { walletContext } from '../context/walletContext'
 
 //localStorage key 存储上次连接的钱包id，用于 autoConnect 恢复
 const LAST_CONNECTED_KEY = 'wallet:lastConnectedId'
 
 //RPC URL:用于 ENS 反查的主网 provider
-const MAINNET_RPC = process.env.PUBLIC_INFURA_ID
-
-//钱包全局上下文
-const walletContext = createContext<WalletContextValue>({
-  connect: async () => {},
-  disconnect: async () => {},
-  isConnected: false,
-  isConnecting: false,
-  address: '',
-  chainID: 0,
-  switchChain: async () => {},
-  openModal(): void {},
-  closeModal(): void {},
-  ensName: null,
-  error: null,
-  chains: [],
-  provider: undefined,
-})
+const MAINNET_RPC = import.meta.env.VITE_MAINNET_RPC ?? 'https://eth.llamarpc.com'
 
 export const WalletProvider: React.FC<WalletProviderProps> = ({
   //组件接收子组件传过来的参数类型 WalletProviderProps
   children,
   chains,
   wallets,
-  provider,
   autoConnect,
 }) => {
   //钱包状态
   const [state, setState] = useState<WalletState>({
     //组件内部状态类型 WalletState
-    address: '',
-    chainID: -1,
+    address: null,
+    chainID: null,
     isConnected: false,
     isConnecting: false,
     ensName: null,
     error: null,
-    chains: chains,
-    provider: provider,
+    chains,
   })
 
   const [modalOpen, setModalOpen] = useState(false)
@@ -122,8 +103,8 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({
         ...prev,
         isConnecting: false,
         isConnected: true,
-        address: connector?.address || '',
-        chainID: connector?.chainId ?? 0,
+        address: connector?.address || null,
+        chainID: connector?.chainId ?? null,
         provider: connector?.provider ?? prev.provider,
       }))
       setModalOpen(false) // 连接成功关闭弹窗
@@ -203,7 +184,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({
       if (!detail || !detail.accounts || detail.accounts.length === 0) return
       setState((prev) => ({
         ...prev,
-        address: detail.accounts[0] ?? '',
+        address: detail.accounts[0] ?? null,
         chainID: typeof detail.chainId === 'number' ? detail.chainId : prev.chainID,
         isConnected: true,
       }))
@@ -235,8 +216,8 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({
 
       setState((prev) => ({
         ...prev,
-        address: '',
-        chainID: -1,
+        address: null,
+        chainID: null,
         isConnected: false,
         isConnecting: false,
         ensName: null,
@@ -278,8 +259,8 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({
       }
 
       setState({
-        address: '',
-        chainID: -1,
+        address: null,
+        chainID: null,
         isConnected: false,
         isConnecting: false,
         ensName: null,

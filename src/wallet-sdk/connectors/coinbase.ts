@@ -1,7 +1,7 @@
 import { ethers } from 'ethers'
 import type { Wallet } from '../types'
 
-// 取出 Coinbase 注入的 EIP-1193 provider
+// 取出 Coinbase 注入的 provider
 // 兼容三种注入方式：
 // 1) window.coinbaseWalletExtension（旧版扩展）
 // 2) window.ethereum.isCoinbaseWallet（独占注入）
@@ -24,7 +24,6 @@ const getCoinbaseProvider = (): any | undefined => {
 
   return undefined
 }
-  console.log('coinbase-provider',getCoinbaseProvider())
 
 // 判断 Coinbase 是否安装
 const isCoinbaseWalletInstalled = (): boolean => {

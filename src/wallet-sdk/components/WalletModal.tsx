@@ -29,17 +29,27 @@ const WalletModal = ({
 
         {isConnecting && <p className="text-blue-500 text-sm mb-2">Connecting wallet...</p>}
 
-        {error && <p className="text-blue-500 text-sm mb-2">{error.message}</p>}
+        {error && <p className="text-red-500 text-sm mb-2" role='alert'>{error.message}</p>}
 
         {/* 渲染 wallets */}
         <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
           {wallets.map((wallet) => (
             <div
               key={wallet.id}
-              className="flex items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
-              onClick={() => onSelectWallet(wallet)}
+              className={`flex items-center p-2 rounded-lg cursor-pointer
+              ${isConnecting ? 'opacity-50 pointer-events-none' : 'hover:bg-gray-100'}`}
+              onClick={() => {
+                console.log('wallet', wallet)
+                if(!wallet.installed){
+                  if(wallet.downloadLink){
+                    window.open(wallet.downloadLink, '_blank')
+                    return
+                  }
+                  if(!isConnecting) onSelectWallet(wallet)
+                }
+              }}
             >
-              <img src={wallet.icon} alt={wallet.name} className="w-6 h-6 mr-2" />
+              <img src={wallet.icon} alt={wallet.name} className="w-6 h-6 mr-2" loading='lazy' referrerPolicy='no-referrer' />
               <span className="text-sm">{wallet.name}</span>
             </div>
           ))}

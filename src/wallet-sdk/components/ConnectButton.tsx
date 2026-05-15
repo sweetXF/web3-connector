@@ -1,4 +1,4 @@
-import { useWallet } from '../provider'
+import { useWallet } from '../hooks/useWallet'
 import { useState } from 'react'
 interface ConnectButtonProps {
   label?: string
@@ -21,8 +21,7 @@ const ConnectButton = ({
   OnChainChange,
   onBalanceChange,
 }: ConnectButtonProps) => {
-  const { connect, disconnect, isConnected, address, chainID, ensName, error, openModal } =
-    useWallet()
+  const { connect, disconnect, isConnected, address, chainID, ensName, error, openModal } = useWallet()
 
   const [balance, setBalance] = useState('')
 
@@ -34,7 +33,7 @@ const ConnectButton = ({
   }
 
   const handleConnect = async () => {
-    await connect('inject')
+    await connect('metamask')
     if (onConnect) {
       onConnect()
     }
@@ -61,12 +60,7 @@ const ConnectButton = ({
 
   // 如果钱包已连接
   return (
-    <button
-      className={`bg-blue-500 text-white font-bold py-2 px-4 rounded ${sizeClasses[size]}`}
-      onClick={handleDisconnect}
-    >
-      {label}
-    </button>
+    <div>我是余额：{balance}</div>
   )
 }
 

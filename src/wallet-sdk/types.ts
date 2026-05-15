@@ -23,7 +23,7 @@ export interface WalletState {
   ensName: string | null
   error: Error | null
   chains: Chain[]
-  provider: any
+  provider?: any
 }
 
 //钱包上下文值
@@ -34,8 +34,6 @@ export interface WalletContextValue extends WalletState {
   openModal: () => void //打开弹窗
   closeModal: () => void //关闭弹窗
 }
-
-export type WalletContext = React.Context<WalletContextValue>
 
 export interface Wallet {
   id: string
@@ -53,16 +51,15 @@ export type WalletProviderProps = {
   chains: Chain[]
   wallets: Wallet[]
   autoConnect?: boolean //是否自动连接
-  provider?: any
 }
 
 // 钱包 connector 返回结构
 export type WalletConnector = {
   accounts: string[]
-  signer: unknown
+  signer: any
   address: string
   chainId: number
-  provider: unknown
+  provider: any
   disconnect: () => Promise<void>
 }
 
