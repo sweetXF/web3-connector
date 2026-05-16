@@ -33,7 +33,7 @@ const WalletModal = ({ isOpen, onClose, wallets, onSelectWallet, isConnecting, e
               className={`flex items-center p-2 rounded-lg cursor-pointer
               ${isConnecting ? 'opacity-50 pointer-events-none' : 'hover:bg-gray-100'}`}
               onClick={() => {
-                console.log('wallet', wallet);
+                console.log('select-wallet', wallet);
                 if (!wallet.installed) {
                   if (wallet.downloadLink) {
                     window.open(wallet.downloadLink, '_blank');
